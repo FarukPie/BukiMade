@@ -1,20 +1,27 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { HeroVisual } from "@/components/HeroVisual";
 import { ArrowIcon } from "@/components/Icons";
 import { ProductArt } from "@/components/ProductArt";
 import { ProductCard } from "@/components/ProductCard";
+import { ProductVisual } from "@/components/ProductVisual";
 import { Reveal } from "@/components/Reveal";
-import { getDict, isLocale } from "@/lib/i18n";
-import { categories, getProduct, products, type Art } from "@/lib/products";
+import { isLocale } from "@/lib/i18n";
+import { categories, type Art } from "@/lib/products";
+import { getSiteData } from "@/lib/server/content";
 
 export default async function Home({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
-  const t = getDict(lang);
+  const { dict, products, categoryImages } = await getSiteData();
+  const t = dict[lang];
 
-  const featured = [...products.filter((p) => p.isBestseller), ...products.filter((p) => p.isNew)].slice(0, 4);
-  const heroArts: [Art, Art, Art] = [getProduct("gunes-kolye")!.art, getProduct("ege-esintisi-bileklik")!.art, getProduct("gun-batimi-kupe")!.art];
+  const highlighted = [...products.filter((p) => p.isBestseller), ...products.filter((p) => p.isNew && !p.isBestseller)];
+  const featured = (highlighted.length ? highlighted : products).slice(0, 4);
+  // Hero'daki üç çizim: farklı kategorilerden ilk ürünler, yoksa sıradaki ürünler.
+  const heroPick = [...new Set([...new Map(products.map((p) => [p.category, p])).values(), ...products])].slice(0, 3);
+  const heroArts = heroPick.map((p) => p.art) as [Art, Art, Art];
 
   return (
     <>
@@ -62,11 +69,11 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
             <Reveal delay={0.4}>
               <dl className="mt-14 flex gap-10 border-t border-line pt-8">
                 {[
-                  ["600+", t.hero.stat1],
-                  ["500+", t.hero.stat2],
-                  ["%100", t.hero.stat3],
-                ].map(([n, label]) => (
-                  <div key={label}>
+                  [t.hero.stat1Value, t.hero.stat1],
+                  [t.hero.stat2Value, t.hero.stat2],
+                  [t.hero.stat3Value, t.hero.stat3],
+                ].map(([n, label], i) => (
+                  <div key={i}>
                     <dt className="sr-only">{label}</dt>
                     <dd className="font-serif text-4xl text-ink">{n}</dd>
                     <dd className="mt-1 text-sm text-muted">{label}</dd>
@@ -75,7 +82,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
               </dl>
             </Reveal>
           </div>
-          <HeroVisual arts={heroArts} badge={t.marquee[0]} />
+          {heroArts.length === 3 && <HeroVisual arts={heroArts} badge={t.marquee[0] ?? ""} />}
         </div>
       </section>
 
@@ -98,15 +105,25 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
         </Reveal>
         <div className="mt-14 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
           {categories.map((c, i) => {
-            const sample = products.find((p) => p.category === c.id)!;
+            const sample = products.find((p) => p.category === c);
+            const cover = categoryImages[c];
+            const visual = "block aspect-[4/5] w-full transition duration-700 group-hover:scale-110";
             return (
-              <Reveal key={c.id} delay={i * 0.1}>
-                <Link href={`/${lang}/collection?category=${c.id}`} className="group block text-center">
-                  <div className="overflow-hidden rounded-t-full rounded-b-3xl border-4 border-paper shadow-lg transition duration-500 group-hover:-translate-y-2 group-hover:shadow-2xl">
-                    <ProductArt art={sample.art} id={`cat-${c.id}`} className="block aspect-[4/5] w-full transition duration-700 group-hover:scale-110" />
+              <Reveal key={c} delay={i * 0.1}>
+                <Link href={`/${lang}/collection?category=${c}`} className="group block text-center">
+                  <div className="overflow-hidden rounded-t-full rounded-b-3xl border-4 border-paper bg-sand shadow-lg transition duration-500 group-hover:-translate-y-2 group-hover:shadow-2xl">
+                    {cover ? (
+                      <div className={`relative ${visual}`}>
+                        <Image src={cover} alt="" fill sizes="(min-width: 1024px) 25vw, 50vw" className="object-cover" />
+                      </div>
+                    ) : sample ? (
+                      <ProductVisual product={sample} alt="" className={visual} sizes="(min-width: 1024px) 25vw, 50vw" />
+                    ) : (
+                      <div className={visual} />
+                    )}
                   </div>
-                  <h3 className="mt-4 font-serif text-2xl text-ink transition group-hover:text-terracotta">{c.label[lang]}</h3>
-                  <p className="text-sm text-muted">{products.filter((p) => p.category === c.id).length} ✦</p>
+                  <h3 className="mt-4 font-serif text-2xl text-ink transition group-hover:text-terracotta">{t.categories[c]}</h3>
+                  <p className="text-sm text-muted">{products.filter((p) => p.category === c).length} ✦</p>
                 </Link>
               </Reveal>
             );
@@ -148,7 +165,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
             </svg>
             <ol className="relative grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
               {t.home.steps.map((s, i) => (
-                <Reveal key={s.title} delay={i * 0.12}>
+                <Reveal key={i} delay={i * 0.12}>
                   <li className="text-center">
                     <span className="mx-auto grid size-20 place-items-center rounded-full border-4 border-cream bg-terracotta font-serif text-3xl italic text-[#fffaf3] shadow-lg">
                       {i + 1}
@@ -197,7 +214,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
         </Reveal>
         <div className="mt-14 grid gap-6 md:grid-cols-3">
           {t.home.testimonials.map((r, i) => (
-            <Reveal key={r.name} delay={i * 0.12}>
+            <Reveal key={i} delay={i * 0.12}>
               <figure className={`h-full rounded-[2rem] border border-line bg-paper p-8 shadow-sm ${i === 1 ? "md:-translate-y-6" : ""}`}>
                 <div className="text-mustard" aria-label="5/5">★★★★★</div>
                 <blockquote className="mt-4 font-serif text-xl leading-relaxed text-ink">“{r.text}”</blockquote>

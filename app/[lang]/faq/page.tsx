@@ -4,19 +4,20 @@ import { notFound } from "next/navigation";
 import { PlusIcon } from "@/components/Icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Reveal } from "@/components/Reveal";
-import { getDict, isLocale } from "@/lib/i18n";
+import { isLocale } from "@/lib/i18n";
+import { getDict } from "@/lib/server/content";
 
 type Props = { params: Promise<{ lang: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang } = await params;
-  return { title: isLocale(lang) ? getDict(lang).nav.faq : undefined };
+  return { title: isLocale(lang) ? (await getDict(lang)).nav.faq : undefined };
 }
 
 export default async function FaqPage({ params }: Props) {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
-  const t = getDict(lang);
+  const t = await getDict(lang);
   const f = t.faq;
 
   return (
@@ -25,7 +26,7 @@ export default async function FaqPage({ params }: Props) {
       <section className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[1.4fr_1fr]">
         <div className="space-y-4">
           {f.items.map((item, i) => (
-            <Reveal key={item.q} delay={i * 0.05}>
+            <Reveal key={i} delay={i * 0.05}>
               <details className="group rounded-3xl border border-line bg-paper px-6 py-5 transition open:shadow-lg sm:px-8">
                 <summary className="flex cursor-pointer items-center justify-between gap-6 font-serif text-xl text-ink">
                   {item.q}
@@ -44,8 +45,8 @@ export default async function FaqPage({ params }: Props) {
             <p className="font-hand text-3xl text-mustard">✦ {f.careTitle}</p>
             <ul className="mt-6 space-y-5">
               {f.care.map((c, i) => (
-                <li key={c} className="flex gap-4">
-                  <span className="font-serif text-2xl italic text-mustard">0{i + 1}</span>
+                <li key={i} className="flex gap-4">
+                  <span className="font-serif text-2xl italic text-mustard">{String(i + 1).padStart(2, "0")}</span>
                   <span className="pt-1 opacity-85">{c}</span>
                 </li>
               ))}

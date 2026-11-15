@@ -3,16 +3,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowIcon } from "@/components/Icons";
 import { PageHeader } from "@/components/PageHeader";
-import { ProductArt } from "@/components/ProductArt";
+import { ProductVisual } from "@/components/ProductVisual";
 import { Reveal } from "@/components/Reveal";
-import { getDict, isLocale } from "@/lib/i18n";
-import { getProduct } from "@/lib/products";
+import { isLocale } from "@/lib/i18n";
+import { getDict, getSiteData } from "@/lib/server/content";
 
 type Props = { params: Promise<{ lang: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang } = await params;
-  return { title: isLocale(lang) ? getDict(lang).nav.story : undefined };
+  return { title: isLocale(lang) ? (await getDict(lang)).nav.story : undefined };
 }
 
 const valueIcons = ["🌙", "🌿", "♻︎"];
@@ -20,8 +20,11 @@ const valueIcons = ["🌙", "🌿", "♻︎"];
 export default async function StoryPage({ params }: Props) {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
-  const t = getDict(lang);
+  const { dict, products } = await getSiteData();
+  const t = dict[lang];
   const s = t.story;
+  const main = products[3] ?? products[0];
+  const second = products[0];
 
   return (
     <>
@@ -32,12 +35,12 @@ export default async function StoryPage({ params }: Props) {
           <div className="relative">
             {/* Atölye "fotoğrafı" yerine kolaj: gerçek fotoğrafla değiştirilebilir */}
             <div className="overflow-hidden rounded-t-full rounded-b-[3rem] border-[6px] border-paper shadow-2xl">
-              <ProductArt art={getProduct("orman-yolu-kolye")!.art} id="story-main" view={2} className="block aspect-[4/5] w-full" />
+              {main ? <ProductVisual product={main} view={2} alt="" sizes="(min-width: 1024px) 50vw, 100vw" /> : <div className="aspect-[4/5] bg-sand" />}
             </div>
             <div className="absolute -bottom-10 -right-4 w-1/2 rotate-6 overflow-hidden rounded-[2rem] border-[6px] border-paper shadow-xl sm:-right-10">
-              <ProductArt art={getProduct("toprak-ana-bileklik")!.art} id="story-b" className="block aspect-[4/5] w-full" />
+              {second ? <ProductVisual product={second} alt="" sizes="25vw" /> : <div className="aspect-[4/5] bg-sand" />}
             </div>
-            <span className="absolute -left-4 top-10 -rotate-12 rounded-full bg-mustard px-5 py-2 font-hand text-2xl text-[#2a1d16] shadow-lg">Buki ✦</span>
+            <span className="absolute -left-4 top-10 -rotate-12 rounded-full bg-mustard px-5 py-2 font-hand text-2xl text-[#2a1d16] shadow-lg">{s.badge}</span>
           </div>
         </Reveal>
         <Reveal delay={0.15}>
@@ -54,10 +57,10 @@ export default async function StoryPage({ params }: Props) {
         </Reveal>
         <div className="mt-14 grid gap-6 md:grid-cols-3">
           {s.values.map((v, i) => (
-            <Reveal key={v.title} delay={i * 0.12}>
+            <Reveal key={i} delay={i * 0.12}>
               <div className="group h-full rounded-[2rem] border border-line bg-paper p-8 transition duration-500 hover:-translate-y-2 hover:shadow-xl">
                 <span className="blob grid size-16 place-items-center bg-mustard/30 text-3xl transition duration-500 group-hover:rotate-12" aria-hidden="true">
-                  {valueIcons[i]}
+                  {valueIcons[i % valueIcons.length]}
                 </span>
                 <h3 className="mt-6 font-serif text-2xl text-ink">{v.title}</h3>
                 <p className="mt-3 text-muted">{v.text}</p>
@@ -73,7 +76,7 @@ export default async function StoryPage({ params }: Props) {
         </Reveal>
         <ol className="relative mt-14 border-l-2 border-dashed border-terracotta/50 pl-10">
           {s.timeline.map((item, i) => (
-            <Reveal key={item.year} delay={i * 0.08}>
+            <Reveal key={i} delay={i * 0.08}>
               <li className="relative pb-12 last:pb-0">
                 <span className="absolute -left-[3.05rem] top-1 grid size-6 place-items-center rounded-full border-4 border-cream bg-terracotta" aria-hidden="true" />
                 <p className="font-hand text-3xl text-terracotta">{item.year}</p>

@@ -1,9 +1,9 @@
 import Link from "next/link";
 import type { Dict, Locale } from "@/lib/i18n";
-import { instagramLink, site, whatsappLink } from "@/lib/site";
+import { instagramLink, site, whatsappLink, type Contact } from "@/lib/site";
 import { InstagramIcon, KnotMark, MailIcon, WhatsappIcon } from "./Icons";
 
-export function Footer({ locale, t }: { locale: Locale; t: Dict }) {
+export function Footer({ locale, t, contact }: { locale: Locale; t: Dict; contact: Contact }) {
   const year = new Date().getFullYear();
   const social = "grid size-11 place-items-center rounded-full border border-[#f7efe3]/20 transition hover:border-mustard hover:text-mustard";
   return (
@@ -44,22 +44,26 @@ export function Footer({ locale, t }: { locale: Locale; t: Dict }) {
         <div>
           <h2 className="font-hand text-2xl text-mustard">{t.footer.follow}</h2>
           <div className="mt-4 flex gap-3">
-            <a href={instagramLink} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className={social}>
+            <a href={instagramLink(contact.instagram)} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className={social}>
               <InstagramIcon className="size-5" />
             </a>
-            <a href={whatsappLink(locale === "tr" ? "Merhaba!" : "Hello!")} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className={social}>
+            <a href={whatsappLink(contact.whatsapp, t.contact.greeting)} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className={social}>
               <WhatsappIcon className="size-5" />
             </a>
-            <a href={`mailto:${site.email}`} aria-label="E-mail" className={social}>
+            <a href={`mailto:${contact.email}`} aria-label="E-mail" className={social}>
               <MailIcon className="size-5" />
             </a>
           </div>
-          <p className="mt-4 text-sm opacity-60">@{site.instagram}</p>
+          <p className="mt-4 text-sm opacity-60">@{contact.instagram}</p>
         </div>
       </div>
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 border-t border-[#f7efe3]/10 px-4 py-6 text-sm sm:flex-row sm:px-6">
         <p className="opacity-50">
           © {year} {site.name}. {t.footer.rights}
+          {/* Site sahibinin panele kolayca ulaşması için; panel yine şifre ile korunur. */}
+          <Link href="/admin" rel="nofollow" className="ml-3 underline-offset-4 hover:text-mustard hover:underline">
+            {t.footer.admin}
+          </Link>
         </p>
         <p className="font-hand text-xl opacity-70">{t.footer.made} ♡</p>
       </div>

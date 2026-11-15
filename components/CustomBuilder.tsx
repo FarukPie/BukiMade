@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import { useState } from "react";
-import { getDict, type Locale } from "@/lib/i18n";
+import type { Dict, Locale } from "@/lib/i18n";
 import { beadOptions, categories, cordColors, type Art, type Category, type Pattern } from "@/lib/products";
 import { formatPrice, whatsappLink } from "@/lib/site";
 import { WhatsappIcon } from "./Icons";
@@ -49,8 +49,17 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-export function CustomBuilder({ locale }: { locale: Locale }) {
-  const t = getDict(locale).custom;
+export function CustomBuilder({
+  locale,
+  t,
+  categoryLabels,
+  whatsapp,
+}: {
+  locale: Locale;
+  t: Dict["custom"];
+  categoryLabels: Dict["categories"];
+  whatsapp: string;
+}) {
   const [kind, setKind] = useState<Category>("bracelet");
   const [cord, setCord] = useState(cordColors[0]);
   const [bead, setBead] = useState(beadOptions[0]);
@@ -68,7 +77,7 @@ export function CustomBuilder({ locale }: { locale: Locale }) {
     pattern,
     bg: [shade(cord.hex, 0.85), shade(cord.hex, 0.45)],
   };
-  const kindLabel = categories.find((c) => c.id === kind)!.label[locale];
+  const kindLabel = categoryLabels[kind];
 
   const message = [
     t.message,
@@ -108,18 +117,18 @@ export function CustomBuilder({ locale }: { locale: Locale }) {
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {categories.map((c) => (
               <button
-                key={c.id}
+                key={c}
                 type="button"
-                aria-pressed={kind === c.id}
+                aria-pressed={kind === c}
                 onClick={() => {
-                  setKind(c.id);
-                  setLength(lengths[c.id].def);
+                  setKind(c);
+                  setLength(lengths[c].def);
                 }}
                 className={`rounded-2xl border-2 px-4 py-3 font-semibold transition ${
-                  kind === c.id ? "border-terracotta bg-terracotta/10 text-terracotta" : "border-line text-ink hover:border-muted"
+                  kind === c ? "border-terracotta bg-terracotta/10 text-terracotta" : "border-line text-ink hover:border-muted"
                 }`}
               >
-                {c.label[locale]}
+                {categoryLabels[c]}
               </button>
             ))}
           </div>
@@ -190,7 +199,7 @@ export function CustomBuilder({ locale }: { locale: Locale }) {
         </div>
 
         <a
-          href={whatsappLink(message)}
+          href={whatsappLink(whatsapp, message)}
           target="_blank"
           rel="noopener noreferrer"
           className="flex w-full items-center justify-center gap-3 rounded-full bg-terracotta px-7 py-4 font-semibold text-[#fffaf3] shadow-lg shadow-terracotta/30 transition hover:-translate-y-0.5 hover:bg-clay"

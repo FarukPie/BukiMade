@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { getDict } from "@/lib/i18n";
+import { getSiteData } from "@/lib/server/content";
 
 // not-found parametre almaz; Türkçe varsayılan, İngilizce alt satırda.
-export default function NotFound() {
-  const tr = getDict("tr").notFound;
-  const en = getDict("en").notFound;
+export default async function NotFound() {
+  const { dict } = await getSiteData();
+  const tr = dict.tr.notFound;
+  const en = dict.en.notFound;
   return (
     <section className="flex min-h-[70vh] flex-col items-center justify-center px-4 pt-32 text-center">
       <p className="font-serif text-[8rem] italic leading-none text-terracotta sm:text-[12rem]">404</p>

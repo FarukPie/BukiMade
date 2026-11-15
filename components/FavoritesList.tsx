@@ -3,14 +3,23 @@
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useFavorites } from "@/lib/favorites";
-import { getDict, type Locale } from "@/lib/i18n";
+import type { Dict, Locale } from "@/lib/i18n";
 import type { Product } from "@/lib/products";
 import { formatPrice, whatsappLink } from "@/lib/site";
 import { HeartIcon, WhatsappIcon } from "./Icons";
 
 /** Favori slug'ları tarayıcıda; kartlar sunucuda render edilip slug ile eşleştirilir. */
-export function FavoritesList({ locale, items }: { locale: Locale; items: { product: Product; card: React.ReactNode }[] }) {
-  const t = getDict(locale).favorites;
+export function FavoritesList({
+  locale,
+  t,
+  whatsapp,
+  items,
+}: {
+  locale: Locale;
+  t: Dict["favorites"];
+  whatsapp: string;
+  items: { product: Product; card: React.ReactNode }[];
+}) {
   const favs = useFavorites();
   const chosen = items.filter(({ product }) => favs.includes(product.slug));
 
@@ -37,7 +46,7 @@ export function FavoritesList({ locale, items }: { locale: Locale; items: { prod
     <div>
       <div className="mb-10 flex justify-end">
         <a
-          href={whatsappLink(message)}
+          href={whatsappLink(whatsapp, message)}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-3 rounded-full bg-terracotta px-7 py-4 font-semibold text-[#fffaf3] shadow-lg shadow-terracotta/30 transition hover:-translate-y-0.5 hover:bg-clay"

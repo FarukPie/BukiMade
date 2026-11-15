@@ -6,39 +6,41 @@ import { ArrowIcon, InstagramIcon, PlusIcon, WhatsappIcon } from "@/components/I
 import { ProductCard } from "@/components/ProductCard";
 import { ProductGallery } from "@/components/ProductGallery";
 import { Reveal } from "@/components/Reveal";
-import { getDict, isLocale } from "@/lib/i18n";
-import { categories, getProduct, products } from "@/lib/products";
+import { fill as fillTemplate, isLocale } from "@/lib/i18n";
+import { getProducts, getSiteData } from "@/lib/server/content";
 import { formatPrice, instagramLink, site, whatsappLink } from "@/lib/site";
 
 type Props = { params: Promise<{ lang: string; slug: string }> };
 
-export const dynamicParams = false;
+// Panelden sonradan eklenen ürünler ilk ziyarette oluşturulur, sonra önbellekten sunulur.
+export const dynamicParams = true;
 
-export function generateStaticParams() {
-  return products.map((p) => ({ slug: p.slug }));
+export async function generateStaticParams() {
+  return (await getProducts()).map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, slug } = await params;
-  const product = getProduct(slug);
+  const product = (await getProducts()).find((p) => p.slug === slug);
   if (!product || !isLocale(lang)) return {};
   return { title: product.name[lang], description: product.short[lang] };
 }
 
 export default async function ProductPage({ params }: Props) {
   const { lang, slug } = await params;
-  const product = getProduct(slug);
+  const { dict, settings, products } = await getSiteData();
+  const product = products.find((p) => p.slug === slug);
   if (!product || !isLocale(lang)) notFound();
-  const t = getDict(lang).product;
+  const t = dict[lang].product;
   const name = product.name[lang];
   const price = formatPrice(product.price, lang);
-  const category = categories.find((c) => c.id === product.category)!.label[lang];
+  const category = dict[lang].categories[product.category];
   const related = products.filter((p) => p.slug !== product.slug && p.category === product.category).slice(0, 3);
   const fill = products.filter((p) => p.slug !== product.slug && !related.includes(p)).slice(0, 4 - related.length);
   const badges = [product.isNew && t.new, product.isBestseller && t.bestseller, product.oneOfAKind && t.oneOfAKind].filter(Boolean);
 
   const details = [
-    { title: t.materials, body: <ul className="list-inside list-disc space-y-1">{product.materials.map((m) => <li key={m.tr}>{m[lang]}</li>)}</ul> },
+    { title: t.materials, body: <ul className="list-inside list-disc space-y-1">{product.materials.map((m, i) => <li key={i}>{m[lang]}</li>)}</ul> },
     { title: t.size, body: <p>{product.size[lang]}</p> },
     { title: t.care, body: <p>{t.careText}</p> },
   ];
@@ -78,7 +80,7 @@ export default async function ProductPage({ params }: Props) {
 
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                   <a
-                    href={whatsappLink(t.whatsappMsg(name, price, `${site.url}/${lang}/collection/${product.slug}`))}
+                    href={whatsappLink(settings.whatsapp, fillTemplate(t.whatsappMsg, { name, price, url: `${site.url}/${lang}/collection/${product.slug}` }))}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group inline-flex flex-1 items-center justify-center gap-3 rounded-full bg-terracotta px-7 py-4 font-semibold text-[#fffaf3] shadow-lg shadow-terracotta/30 transition hover:-translate-y-0.5 hover:bg-clay"
@@ -87,7 +89,7 @@ export default async function ProductPage({ params }: Props) {
                     {t.orderWhatsapp}
                   </a>
                   <a
-                    href={instagramLink}
+                    href={instagramLink(settings.instagram)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-3 rounded-full border-2 border-ink/80 px-7 py-4 font-semibold text-ink transition hover:bg-ink hover:text-cream"
