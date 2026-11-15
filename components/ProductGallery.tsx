@@ -12,7 +12,7 @@ export function ProductGallery({ product, name, views }: { product: Product; nam
       <div className="flex gap-3 sm:flex-col" role="tablist" aria-label={name}>
         {views.map((label, i) => (
           <button
-            key={label}
+            key={i}
             type="button"
             role="tab"
             aria-selected={active === i}

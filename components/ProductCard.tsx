@@ -1,15 +1,15 @@
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
-import { getDict } from "@/lib/i18n";
 import type { Product } from "@/lib/products";
-import { categories } from "@/lib/products";
+import { getDict } from "@/lib/server/content";
 import { formatPrice } from "@/lib/site";
 import { FavoriteButton } from "./FavoriteButton";
 import { ProductVisual } from "./ProductVisual";
 
-export function ProductCard({ product, locale }: { product: Product; locale: Locale }) {
-  const t = getDict(locale).product;
-  const category = categories.find((c) => c.id === product.category)!.label[locale];
+export async function ProductCard({ product, locale }: { product: Product; locale: Locale }) {
+  const dict = await getDict(locale);
+  const t = dict.product;
+  const category = dict.categories[product.category];
   const badge = product.isNew ? t.new : product.isBestseller ? t.bestseller : product.oneOfAKind ? t.oneOfAKind : null;
 
   return (

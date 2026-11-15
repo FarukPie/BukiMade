@@ -4,24 +4,26 @@ import { ContactForm } from "@/components/ContactForm";
 import { InstagramIcon, MailIcon, WhatsappIcon } from "@/components/Icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Reveal } from "@/components/Reveal";
-import { getDict, isLocale } from "@/lib/i18n";
-import { instagramLink, site, whatsappLink } from "@/lib/site";
+import { isLocale } from "@/lib/i18n";
+import { getDict, getSiteData } from "@/lib/server/content";
+import { instagramLink, whatsappLink } from "@/lib/site";
 
 type Props = { params: Promise<{ lang: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang } = await params;
-  return { title: isLocale(lang) ? getDict(lang).nav.contact : undefined };
+  return { title: isLocale(lang) ? (await getDict(lang)).nav.contact : undefined };
 }
 
 export default async function ContactPage({ params }: Props) {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
-  const t = getDict(lang).contact;
+  const { dict, settings: site } = await getSiteData();
+  const t = dict[lang].contact;
 
   const channels = [
-    { icon: WhatsappIcon, label: "WhatsApp", value: `+${site.whatsapp}`, href: whatsappLink(lang === "tr" ? "Merhaba!" : "Hello!"), color: "bg-[#25d366]/15 text-[#1a9e4b]" },
-    { icon: InstagramIcon, label: "Instagram", value: `@${site.instagram}`, href: instagramLink, color: "bg-terracotta/15 text-terracotta" },
+    { icon: WhatsappIcon, label: "WhatsApp", value: `+${site.whatsapp}`, href: whatsappLink(site.whatsapp, t.greeting), color: "bg-[#25d366]/15 text-[#1a9e4b]" },
+    { icon: InstagramIcon, label: "Instagram", value: `@${site.instagram}`, href: instagramLink(site.instagram), color: "bg-terracotta/15 text-terracotta" },
     { icon: MailIcon, label: "E-mail", value: site.email, href: `mailto:${site.email}`, color: "bg-mustard/20 text-clay" },
   ];
 
@@ -30,7 +32,7 @@ export default async function ContactPage({ params }: Props) {
       <PageHeader eyebrow="✦ ✦ ✦" title={t.title} subtitle={t.subtitle} />
       <section className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[1.5fr_1fr]">
         <Reveal>
-          <ContactForm locale={lang} />
+          <ContactForm t={t} contact={site} />
         </Reveal>
         <Reveal delay={0.15}>
           <h2 className="font-hand text-3xl text-terracotta">{t.channels}</h2>

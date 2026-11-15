@@ -6,7 +6,13 @@ export function isLocale(value: string): value is Locale {
   return (locales as readonly string[]).includes(value);
 }
 
-export const dict = {
+/**
+ * Varsayılan metinler. Admin panelinden yapılan değişiklikler veritabanında saklanır ve
+ * bu yapının üzerine yazılır (lib/content-schema.ts → conform). Yeni bir metin eklemek için
+ * buraya anahtar eklemek yeterli; panel onu otomatik gösterir.
+ * {name} gibi süslü parantezli yer tutucular fill() ile doldurulur.
+ */
+export const defaultDict = {
   tr: {
     nav: {
       home: "Ana Sayfa",
@@ -20,6 +26,7 @@ export const dict = {
       close: "Kapat",
       theme: "Temayı değiştir",
       language: "English",
+      skip: "İçeriğe geç",
     },
     hero: {
       eyebrow: "El yapımı makrome takılar",
@@ -32,7 +39,11 @@ export const dict = {
       stat1: "düğüm / bileklik",
       stat2: "mutlu bilek",
       stat3: "el yapımı",
+      stat1Value: "600+",
+      stat2Value: "500+",
+      stat3Value: "%100",
     },
+    categories: { bracelet: "Bileklik", necklace: "Kolye", earrings: "Küpe", anklet: "Halhal" },
     marquee: ["El yapımı", "Doğal pamuk", "Gerçek taşlar", "Sevgiyle düğümlendi", "Tek tasarım", "Türkiye'de üretildi"],
     home: {
       categoriesTitle: "Kendi tarzını bul",
@@ -73,8 +84,7 @@ export const dict = {
       shipping: "1–3 iş gününde kargoda · Hediye paketi ücretsiz",
       handmade: "Her parça el yapımıdır; renk ve dokuda küçük farklılıklar olabilir.",
       related: "Bunları da sevebilirsin",
-      whatsappMsg: (name: string, price: string, url: string) =>
-        `Merhaba! "${name}" (${price}) takısıyla ilgileniyorum. ${url}`,
+      whatsappMsg: 'Merhaba! "{name}" ({price}) takısıyla ilgileniyorum. {url}',
       back: "Koleksiyona dön",
       views: ["Ön", "Detay", "Doku"],
     },
@@ -84,11 +94,12 @@ export const dict = {
       all: "Tümü",
       sort: "Sırala",
       sortOptions: { featured: "Öne çıkanlar", priceAsc: "Fiyat: Artan", priceDesc: "Fiyat: Azalan", new: "En yeniler" },
-      count: (n: number) => `${n} takı`,
+      count: "{n} takı",
       empty: "Bu kategoride henüz takı yok.",
     },
     story: {
       eyebrow: "Atölyeden merhaba",
+      badge: "Buki ✦",
       title: "İpi düğüme, düğümü hikayeye dönüştürüyorum",
       intro:
         "Ben Buki. Birkaç yıl önce bir yaz tatilinde, bir parça ipi parmaklarımın arasında düğümlerken her şey başladı. O gün bugündür küçük atölyemde, doğadan ve anılardan ilham alarak takılar örüyorum.",
@@ -156,6 +167,7 @@ export const dict = {
       channels: "Diğer kanallar",
       hours: "Mesajlara genellikle aynı gün dönüyorum.",
       required: "Lütfen adını ve mesajını yaz.",
+      greeting: "Merhaba!",
     },
     favorites: {
       title: "Favorilerin",
@@ -172,6 +184,7 @@ export const dict = {
       follow: "Takip et",
       rights: "Tüm hakları saklıdır.",
       made: "Sevgiyle düğümlendi",
+      admin: "Yönetici girişi",
     },
     notFound: { title: "Bu düğüm çözülmüş gibi…", text: "Aradığın sayfayı bulamadım.", cta: "Ana sayfaya dön" },
   },
@@ -188,6 +201,7 @@ export const dict = {
       close: "Close",
       theme: "Toggle theme",
       language: "Türkçe",
+      skip: "Skip to content",
     },
     hero: {
       eyebrow: "Handmade macramé jewellery",
@@ -200,7 +214,11 @@ export const dict = {
       stat1: "knots / bracelet",
       stat2: "happy wrists",
       stat3: "handmade",
+      stat1Value: "600+",
+      stat2Value: "500+",
+      stat3Value: "100%",
     },
+    categories: { bracelet: "Bracelets", necklace: "Necklaces", earrings: "Earrings", anklet: "Anklets" },
     marquee: ["Handmade", "Natural cotton", "Real stones", "Knotted with love", "One of a kind", "Made in Türkiye"],
     home: {
       categoriesTitle: "Find your style",
@@ -241,8 +259,7 @@ export const dict = {
       shipping: "Ships in 1–3 business days · Free gift wrapping",
       handmade: "Every piece is handmade; small variations in colour and texture may occur.",
       related: "You may also love",
-      whatsappMsg: (name: string, price: string, url: string) =>
-        `Hello! I'm interested in "${name}" (${price}). ${url}`,
+      whatsappMsg: `Hello! I'm interested in "{name}" ({price}). {url}`,
       back: "Back to collection",
       views: ["Front", "Detail", "Texture"],
     },
@@ -252,11 +269,12 @@ export const dict = {
       all: "All",
       sort: "Sort",
       sortOptions: { featured: "Featured", priceAsc: "Price: Low to High", priceDesc: "Price: High to Low", new: "Newest" },
-      count: (n: number) => `${n} pieces`,
+      count: "{n} pieces",
       empty: "No pieces in this category yet.",
     },
     story: {
       eyebrow: "Hello from the studio",
+      badge: "Buki ✦",
       title: "Turning cord into knots, and knots into stories",
       intro:
         "I'm Buki. A few years ago, on a summer holiday, it all began with a piece of cord between my fingers. Ever since, I've been weaving jewellery in my little studio, inspired by nature and memories.",
@@ -324,6 +342,7 @@ export const dict = {
       channels: "Other channels",
       hours: "I usually reply the same day.",
       required: "Please enter your name and message.",
+      greeting: "Hello!",
     },
     favorites: {
       title: "Your favourites",
@@ -340,16 +359,18 @@ export const dict = {
       follow: "Follow",
       rights: "All rights reserved.",
       made: "Knotted with love",
+      admin: "Admin login",
     },
     notFound: { title: "This knot seems to have come undone…", text: "I couldn't find the page you're looking for.", cta: "Back to home" },
   },
 } satisfies Record<Locale, unknown>;
 
-export type Dict = (typeof dict)["tr"];
+export type Dict = (typeof defaultDict)["tr"];
 
 // İngilizce sözlüğün Türkçe ile aynı anahtarlara sahip olduğunu derleme anında doğrular.
-const typedDict: Record<Locale, Dict> = dict;
+export const defaults: Record<Locale, Dict> = defaultDict;
 
-export function getDict(locale: Locale): Dict {
-  return typedDict[locale];
+/** "{n} takı" gibi şablonlardaki yer tutucuları doldurur. */
+export function fill(template: string, vars: Record<string, string | number>) {
+  return template.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
 }

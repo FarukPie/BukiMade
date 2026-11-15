@@ -1,13 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { getDict, type Locale } from "@/lib/i18n";
-import { site, whatsappLink } from "@/lib/site";
+import type { Dict } from "@/lib/i18n";
+import { site, whatsappLink, type Contact } from "@/lib/site";
 import { MailIcon, WhatsappIcon } from "./Icons";
 
 /** Veritabanı yok: mesaj WhatsApp veya e-posta istemcisine aktarılır. */
-export function ContactForm({ locale }: { locale: Locale }) {
-  const t = getDict(locale).contact;
+export function ContactForm({ t, contact }: { t: Dict["contact"]; contact: Contact }) {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [error, setError] = useState(false);
 
@@ -21,8 +20,8 @@ export function ContactForm({ locale }: { locale: Locale }) {
     }
     const url =
       channel === "whatsapp"
-        ? whatsappLink(body)
-        : `mailto:${site.email}?subject=${encodeURIComponent(`${site.name} – ${form.name.trim()}`)}&body=${encodeURIComponent(body)}`;
+        ? whatsappLink(contact.whatsapp, body)
+        : `mailto:${contact.email}?subject=${encodeURIComponent(`${site.name} – ${form.name.trim()}`)}&body=${encodeURIComponent(body)}`;
     window.open(url, channel === "whatsapp" ? "_blank" : "_self", "noopener");
   };
 

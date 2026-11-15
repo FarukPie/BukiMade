@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
-import { getDict, type Dict, type Locale } from "@/lib/i18n";
+import { fill, type Dict } from "@/lib/i18n";
 import type { Category, Product } from "@/lib/products";
 
 type Sort = keyof Dict["collection"]["sortOptions"];
@@ -12,14 +12,13 @@ export function CollectionGrid({
   items,
   categories,
   initialCategory,
-  locale,
+  t,
 }: {
   items: { product: Product; card: React.ReactNode }[];
   categories: { id: Category; label: string }[];
   initialCategory: Category | "all";
-  locale: Locale;
+  t: Dict["collection"];
 }) {
-  const t = getDict(locale).collection;
   const [category, setCategory] = useState<Category | "all">(initialCategory);
   const [sort, setSort] = useState<Sort>("featured");
 
@@ -65,7 +64,7 @@ export function CollectionGrid({
         </div>
         <div className="flex items-center gap-3 text-sm">
           <span className="text-muted" aria-live="polite">
-            {t.count(filtered.length)}
+            {fill(t.count, { n: filtered.length })}
           </span>
           <label className="sr-only" htmlFor="sort">
             {t.sort}
