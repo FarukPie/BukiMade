@@ -1,6 +1,6 @@
 # BukiMade — Checkpoint
 
-> Son güncelleme: 2026-11-15 · Son commit: `2e081a9` (ilk sürüm) + admin paneli (henüz commit edilmedi)
+> Son güncelleme: 2026-11-15 · Dal: `feature/admin-panel` ([PR #1](https://github.com/FarukPie/BukiMade/pull/1)) · Canlı: https://bukimade.vercel.app
 >
 > İşaretler: `[x]` yapıldı · `[ ]` yapılacak · `[~]` kısmen / geçici değerle duruyor
 >
@@ -60,9 +60,11 @@ El yapımı makrome takı vitrini. Next.js 16 (App Router) + Tailwind CSS 4 + Mo
 
 ## 2. Yayından önce mutlaka yapılacaklar
 
-- [ ] **Commit + push**: Admin paneli değişiklikleri henüz commit edilmedi.
-- [ ] **Vercel ortam değişkenleri**: `SUPABASE_URL` ve `SUPABASE_SECRET_KEY` Vercel → Settings → Environment Variables'a eklenecek. Eklenmezse derleme hata verir.
-- [ ] **Vercel'e yayınlama**: Repo bağlanıp ilk yayın yapılacak.
+- [x] **Commit + push**: `feature/admin-panel` dalında, PR #1 açık.
+- [ ] **PR #1'i `main` ile birleştirmek**: Vercel'i GitHub'a bağlayıp otomatik yayın için gerekli.
+- [x] **Vercel ortam değişkenleri**: `SUPABASE_URL` ve `SUPABASE_SECRET_KEY` canlı ve önizleme ortamında tanımlı.
+- [x] **Vercel'e yayınlama**: https://bukimade.vercel.app (Vercel CLI ile, 2026-11-15). Tüm sayfalar, sitemap (12 ürün) ve güvenlik başlıkları kontrol edildi.
+- [ ] **Vercel hesabında 2FA**: https://vercel.com/account/settings/authentication
 - [ ] **İlk girişte şifreyi değiştirin**: `/admin` → `admin` / `admin123` → yeni güçlü şifre. Yayından hemen sonra yapın.
 - [~] **İletişim bilgileri** (panel → İletişim): WhatsApp `905000000000` geçici; e-posta ve Instagram doğru mu kontrol edin.
 - [ ] **Gerçek ürün fotoğrafları** (panel → Ürünler): Henüz hiçbir üründe fotoğraf yok.
